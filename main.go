@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/sha256"
 	"errors"
 	"flag"
@@ -20,6 +21,7 @@ func main() {
 	deflatecheck := flag.Bool("check", false, "deflaten anche check checksums")
 	stdout := flag.Bool("stdout", false, "write to file or to stdout when inflating")
 	keep := flag.Bool("keep", false, "keep original file after deflating")
+	checksum := flag.String("checksum", "md5", "checksum strategy to use. Currently implemented: md5, sha256 ")
 
 	flag.Parse()
 	if *deflate {
@@ -46,22 +48,48 @@ func main() {
 
 	}
 	if *deflatecheck {
-		deflateCheck(*fp)
+		c, _ := deflateCheck(*fp, *checksum)
+		fmt.Printf("%+v", c)
 	}
 }
 
-func checksumFromPath(file string) [sha256.Size]byte {
+type checksum struct {
+	sha256 [sha256.Size]byte
+	md5    string
+}
+
+// checksumFromPath returns a struct with the checksum of the file at path using the strategy select with strategy string
+// currently implemented sha256 and md5
+func checksumFromPath(file string, strategy string) checksum {
+	var localchecksum checksum
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Fatal(err)
 	}
-	checkSum := sha256.Sum256(data)
-	return checkSum
+	switch strategy {
+	default:
+		panic("Not implemented")
+	case "md5":
+		localchecksum.md5 = fmt.Sprintf("%x", md5.Sum(data))
+	case "sha256":
+		localchecksum.sha256 = sha256.Sum256(data)
+	}
+	return localchecksum
 }
 
-func checksumFromArr(data []byte) [sha256.Size]byte {
-	checkSum := sha256.Sum256(data)
-	return checkSum
+// checksumFromArr returns a struct with the checksum of the byte array passed the strategy select with strategy string
+// currently implemented sha256 and md5
+func checksumFromArr(data []byte, strategy string) checksum {
+	var localchecksum checksum
+	switch strategy {
+	default:
+		panic("Not implemented")
+	case "md5":
+		localchecksum.md5 = fmt.Sprintf("%x", md5.Sum(data))
+	case "sha256":
+		localchecksum.sha256 = sha256.Sum256(data)
+	}
+	return localchecksum
 }
 func xzReader(file string, stdout bool) (io.ReadCloser, error) {
 	f, err := os.Open(file)
@@ -128,29 +156,29 @@ func xzWriter(file string, keep bool) error {
 	return err
 }
 
-func deflateCheck(file string) error {
-	checksum := checksumFromPath(file)
+func deflateCheck(file string, strategy string) (checksum, error) {
+	checksum := checksumFromPath(file, strategy)
 	keep := true
 	err := xzWriter(file, keep)
 	if err != nil {
 		log.Printf("Err: %v", err)
-		return err
+		return checksum, err
 	} else {
 		stdout := true
 		xzfile := fmt.Sprintf("%v.xz", file)
 		r, err := xzReader(xzfile, stdout)
 		if err != nil {
 			log.Printf("Err: %v", err)
-			return err
+			return checksum, err
 		} else {
 			data, err := ioutil.ReadAll(r)
 			if err != nil {
 				log.Printf("Err: %v", err)
-				return err
-				checksum2 := checksumFromArr(data)
+				return checksum, err
+				checksum2 := checksumFromArr(data, strategy)
 				if checksum != checksum2 {
 					err := errors.New("something went wrong sha256 don't match")
-					return err
+					return checksum, err
 				} else {
 					log.Printf("Removing old file")
 					os.Remove(file)
@@ -158,5 +186,5 @@ func deflateCheck(file string) error {
 			}
 		}
 	}
-	return nil
+	return checksum, nil
 }
