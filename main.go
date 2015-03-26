@@ -1,4 +1,4 @@
-package main
+package xz
 
 import (
 	"bytes"
@@ -48,20 +48,20 @@ func main() {
 
 	}
 	if *deflatecheck {
-		c, _ := deflateCheck(*fp, *checksum)
+		c, _ := DeflateCheck(*fp, *checksum)
 		fmt.Printf("%+v", c)
 	}
 }
 
-type checksum struct {
-	sha256 [sha256.Size]byte
-	md5    string
+type Checksum struct {
+	Sha256 [sha256.Size]byte
+	Md5    string
 }
 
 // checksumFromPath returns a struct with the checksum of the file at path using the strategy select with strategy string
 // currently implemented sha256 and md5
-func checksumFromPath(file string, strategy string) checksum {
-	var localchecksum checksum
+func checksumFromPath(file string, strategy string) Checksum {
+	var localchecksum Checksum
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Fatal(err)
@@ -70,24 +70,24 @@ func checksumFromPath(file string, strategy string) checksum {
 	default:
 		panic("Not implemented")
 	case "md5":
-		localchecksum.md5 = fmt.Sprintf("%x", md5.Sum(data))
+		localchecksum.Md5 = fmt.Sprintf("%x", md5.Sum(data))
 	case "sha256":
-		localchecksum.sha256 = sha256.Sum256(data)
+		localchecksum.Sha256 = sha256.Sum256(data)
 	}
 	return localchecksum
 }
 
 // checksumFromArr returns a struct with the checksum of the byte array passed the strategy select with strategy string
 // currently implemented sha256 and md5
-func checksumFromArr(data []byte, strategy string) checksum {
-	var localchecksum checksum
+func checksumFromArr(data []byte, strategy string) Checksum {
+	var localchecksum Checksum
 	switch strategy {
 	default:
 		panic("Not implemented")
 	case "md5":
-		localchecksum.md5 = fmt.Sprintf("%x", md5.Sum(data))
+		localchecksum.Md5 = fmt.Sprintf("%x", md5.Sum(data))
 	case "sha256":
-		localchecksum.sha256 = sha256.Sum256(data)
+		localchecksum.Sha256 = sha256.Sum256(data)
 	}
 	return localchecksum
 }
@@ -156,7 +156,9 @@ func xzWriter(file string, keep bool) error {
 	return err
 }
 
-func deflateCheck(file string, strategy string) (checksum, error) {
+func DeflateCheck(file string, strategy string) (Checksum, error) {
+	// TODO fix this, comparing structs is meanigless
+	// cose the correct chesum depending on strategy
 	checksum := checksumFromPath(file, strategy)
 	keep := true
 	err := xzWriter(file, keep)
