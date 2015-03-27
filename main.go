@@ -157,8 +157,6 @@ func xzWriter(file string, keep bool) error {
 }
 
 func DeflateCheck(file string, strategy string) (Checksum, error) {
-	// TODO fix this, comparing structs is meanigless
-	// cose the correct chesum depending on strategy
 	checksum := checksumFromPath(file, strategy)
 	keep := true
 	err := xzWriter(file, keep)
@@ -178,10 +176,26 @@ func DeflateCheck(file string, strategy string) (Checksum, error) {
 				log.Printf("Err: %v", err)
 				return checksum, err
 				checksum2 := checksumFromArr(data, strategy)
-				if checksum != checksum2 {
-					err := errors.New("something went wrong sha256 don't match")
-					return checksum, err
-				} else {
+				var err error
+				switch strategy {
+				default:
+					panic("Not implemented")
+				case "md5":
+					before := checksum.Md5
+					after := checksum2.Md5
+					if before != after {
+						err = errors.New("something went wrong md5 don't match")
+						return checksum, err
+					}
+				case "sha256":
+					before := checksum.Sha256
+					after := checksum2.Sha256
+					if before != after {
+						err = errors.New("something went wrong sha256 don't match")
+						return checksum, err
+					}
+				}
+				if err != nil {
 					log.Printf("Removing old file")
 					os.Remove(file)
 				}
