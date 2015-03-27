@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"flag"
 	"fmt"
@@ -58,6 +59,12 @@ type Checksum struct {
 	Md5    string
 }
 
+func base64md5(data []byte) string {
+	h := md5.New()
+	h.Write(data)
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
+}
+
 // checksumFromPath returns a struct with the checksum of the file at path using the strategy select with strategy string
 // currently implemented sha256 and md5
 func checksumFromPath(file string, strategy string) Checksum {
@@ -70,22 +77,22 @@ func checksumFromPath(file string, strategy string) Checksum {
 	default:
 		panic("Not implemented")
 	case "md5":
-		localchecksum.Md5 = fmt.Sprintf("%x", md5.Sum(data))
+		localchecksum.Md5 = base64md5(data)
 	case "sha256":
 		localchecksum.Sha256 = sha256.Sum256(data)
 	}
 	return localchecksum
 }
 
-// checksumFromArr returns a struct with the checksum of the byte array passed the strategy select with strategy string
+// ChecksumFromArr returns a struct with the checksum of the byte array passed the strategy select with strategy string
 // currently implemented sha256 and md5
-func checksumFromArr(data []byte, strategy string) Checksum {
+func ChecksumFromArr(data []byte, strategy string) Checksum {
 	var localchecksum Checksum
 	switch strategy {
 	default:
 		panic("Not implemented")
 	case "md5":
-		localchecksum.Md5 = fmt.Sprintf("%x", md5.Sum(data))
+		localchecksum.Md5 = base64md5(data)
 	case "sha256":
 		localchecksum.Sha256 = sha256.Sum256(data)
 	}
@@ -175,7 +182,7 @@ func DeflateCheck(file string, strategy string) (Checksum, error) {
 			if err != nil {
 				log.Printf("Err: %v", err)
 				return checksum, err
-				checksum2 := checksumFromArr(data, strategy)
+				checksum2 := ChecksumFromArr(data, strategy)
 				var err error
 				switch strategy {
 				default:
@@ -195,12 +202,12 @@ func DeflateCheck(file string, strategy string) (Checksum, error) {
 						return checksum, err
 					}
 				}
-				if err != nil {
+				if err == nil {
 					log.Printf("Removing old file")
 					os.Remove(file)
 				}
 			}
+			return checksum, nil
 		}
 	}
-	return checksum, nil
 }
