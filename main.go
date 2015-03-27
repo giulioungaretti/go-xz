@@ -49,8 +49,7 @@ func main() {
 
 	}
 	if *deflatecheck {
-		c, _ := DeflateCheck(*fp, *checksum)
-		fmt.Printf("%+v", c)
+		_ = DeflateCheck(*fp, *checksum)
 	}
 }
 
@@ -59,7 +58,7 @@ type Checksum struct {
 	Md5    string
 }
 
-func base64md5(data []byte) string {
+func Base64md5(data []byte) string {
 	h := md5.New()
 	h.Write(data)
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
@@ -77,7 +76,7 @@ func checksumFromPath(file string, strategy string) Checksum {
 	default:
 		panic("Not implemented")
 	case "md5":
-		localchecksum.Md5 = base64md5(data)
+		localchecksum.Md5 = Base64md5(data)
 	case "sha256":
 		localchecksum.Sha256 = sha256.Sum256(data)
 	}
@@ -92,7 +91,7 @@ func ChecksumFromArr(data []byte, strategy string) Checksum {
 	default:
 		panic("Not implemented")
 	case "md5":
-		localchecksum.Md5 = base64md5(data)
+		localchecksum.Md5 = Base64md5(data)
 	case "sha256":
 		localchecksum.Sha256 = sha256.Sum256(data)
 	}
@@ -163,25 +162,30 @@ func xzWriter(file string, keep bool) error {
 	return err
 }
 
-func DeflateCheck(file string, strategy string) (Checksum, error) {
+// DeflateCheck deflates a file to file.xz, and deletes file if the checksum of the
+// original file is the same as that of the byte stream coming form inflating back file.xz.
+// Use either stragegy md5 || sha256 to check for the correctness of the deflating process.
+// If there is an error, its returned  and the old file is not deleted, BUT
+// there is no guarantee that the deflated file ihas been  created.
+func DeflateCheck(file string, strategy string) error {
 	checksum := checksumFromPath(file, strategy)
 	keep := true
 	err := xzWriter(file, keep)
 	if err != nil {
 		log.Printf("Err: %v", err)
-		return checksum, err
+		return err
 	} else {
 		stdout := true
 		xzfile := fmt.Sprintf("%v.xz", file)
 		r, err := xzReader(xzfile, stdout)
 		if err != nil {
 			log.Printf("Err: %v", err)
-			return checksum, err
+			return err
 		} else {
 			data, err := ioutil.ReadAll(r)
 			if err != nil {
 				log.Printf("Err: %v", err)
-				return checksum, err
+				return err
 				checksum2 := ChecksumFromArr(data, strategy)
 				var err error
 				switch strategy {
@@ -192,14 +196,14 @@ func DeflateCheck(file string, strategy string) (Checksum, error) {
 					after := checksum2.Md5
 					if before != after {
 						err = errors.New("something went wrong md5 don't match")
-						return checksum, err
+						return err
 					}
 				case "sha256":
 					before := checksum.Sha256
 					after := checksum2.Sha256
 					if before != after {
 						err = errors.New("something went wrong sha256 don't match")
-						return checksum, err
+						return err
 					}
 				}
 				if err == nil {
@@ -207,7 +211,7 @@ func DeflateCheck(file string, strategy string) (Checksum, error) {
 					os.Remove(file)
 				}
 			}
-			return checksum, nil
+			return nil
 		}
 	}
 }
