@@ -186,6 +186,7 @@ func DeflateCheck(file string, strategy string) error {
 			if err != nil {
 				log.Printf("Err: %v", err)
 				return err
+			} else {
 				checksum2 := ChecksumFromArr(data, strategy)
 				var err error
 				switch strategy {
@@ -206,12 +207,17 @@ func DeflateCheck(file string, strategy string) error {
 						return err
 					}
 				}
-				if err == nil {
-					log.Printf("Removing old file")
-					os.Remove(file)
-				}
 			}
-			return nil
+			if err == nil {
+				fmt.Printf("Removing old file \n")
+				os.Remove(file)
+				fmt.Printf("xz removed: %v \n", file)
+				return nil
+			} else {
+				return err
+			}
+
 		}
+
 	}
 }
