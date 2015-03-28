@@ -53,11 +53,14 @@ func main() {
 	}
 }
 
+// Checksum contains a Sha256 checksum as a byte array
+// and a md5 check sum as string.
 type Checksum struct {
 	Sha256 [sha256.Size]byte
 	Md5    string
 }
 
+// Base64md5 converts a md5 checksum as []byte to a base 16 encoded string
 func Base64md5(data []byte) string {
 	h := md5.New()
 	h.Write(data)
@@ -96,7 +99,12 @@ func ChecksumFromArr(data []byte, strategy string) Checksum {
 		localchecksum.Sha256 = sha256.Sum256(data)
 	}
 	return localchecksum
+
 }
+
+// xzReader inflates the file (named file).
+// if stdout is true the inflated file is returned  as io.ReadCloser
+// else it's wirtten to disk.
 func xzReader(file string, stdout bool) (io.ReadCloser, error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -136,6 +144,9 @@ func xzReader(file string, stdout bool) (io.ReadCloser, error) {
 	}
 }
 
+// xzWriter deflates the file (named file) to disk
+// if keep is  true the original file is kept on disk else
+// is blindly removed
 func xzWriter(file string, keep bool) error {
 	// Create an *exec.Cmd
 	var cmd *exec.Cmd
@@ -158,7 +169,6 @@ func xzWriter(file string, keep bool) error {
 		errstr := string(cmderror.Bytes())
 		err = errors.New(errstr)
 	}
-	// checksum
 	return err
 }
 
