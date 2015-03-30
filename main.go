@@ -33,7 +33,7 @@ func main() {
 	}
 	if *inflate {
 		if *stdout {
-			r, err := xzReader(*fp, *stdout)
+			r, err := XzReader(*fp, *stdout)
 			n, err := io.Copy(os.Stdout, r)
 			if err != nil {
 				log.Printf("copied %d bytes with err: %v", n, err)
@@ -41,7 +41,7 @@ func main() {
 				log.Printf("copied %d bytes", n)
 			}
 		} else {
-			_, err := xzReader(*fp, *stdout)
+			_, err := XzReader(*fp, *stdout)
 			if err != nil {
 				log.Printf("Err: %v", err)
 			}
@@ -102,10 +102,10 @@ func ChecksumFromArr(data []byte, strategy string) Checksum {
 
 }
 
-// xzReader inflates the file (named file).
+// XzReader inflates the file (named file).
 // if stdout is true the inflated file is returned  as io.ReadCloser
 // else it's wirtten to disk.
-func xzReader(file string, stdout bool) (io.ReadCloser, error) {
+func XzReader(file string, stdout bool) (io.ReadCloser, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		log.Fatal(err)
@@ -187,7 +187,7 @@ func DeflateCheck(file string, strategy string) error {
 	} else {
 		stdout := true
 		xzfile := fmt.Sprintf("%v.xz", file)
-		r, err := xzReader(xzfile, stdout)
+		r, err := XzReader(xzfile, stdout)
 		if err != nil {
 			log.Printf("Err: %v", err)
 			return err
