@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 )
@@ -28,7 +27,7 @@ func main() {
 	if *deflate {
 		err := xzWriter(*fp, *keep)
 		if err != nil {
-			log.Printf("Err: %v", err)
+			fmt.Printf("Err: %v", err)
 		}
 	}
 	if *inflate {
@@ -36,14 +35,14 @@ func main() {
 			r, err := XzReader(*fp, *stdout)
 			n, err := io.Copy(os.Stdout, r)
 			if err != nil {
-				log.Printf("copied %d bytes with err: %v", n, err)
+				fmt.Printf("copied %d bytes with err: %v", n, err)
 			} else {
-				log.Printf("copied %d bytes", n)
+				fmt.Printf("copied %d bytes", n)
 			}
 		} else {
 			_, err := XzReader(*fp, *stdout)
 			if err != nil {
-				log.Printf("Err: %v", err)
+				fmt.Printf("Err: %v", err)
 			}
 		}
 
@@ -73,7 +72,7 @@ func checksumFromPath(file string, strategy string) Checksum {
 	var localchecksum Checksum
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	switch strategy {
 	default:
@@ -108,7 +107,7 @@ func ChecksumFromArr(data []byte, strategy string) Checksum {
 func XzReader(file string, stdout bool) (io.ReadCloser, error) {
 	f, err := os.Open(file)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if stdout {
 		rpipe, wpipe := io.Pipe()
@@ -182,19 +181,19 @@ func DeflateCheck(file string, strategy string) error {
 	keep := true
 	err := xzWriter(file, keep)
 	if err != nil {
-		log.Printf("Err: %v", err)
+		fmt.Printf("Err: %v", err)
 		return err
 	} else {
 		stdout := true
 		xzfile := fmt.Sprintf("%v.xz", file)
 		r, err := XzReader(xzfile, stdout)
 		if err != nil {
-			log.Printf("Err: %v", err)
+			fmt.Printf("Err: %v", err)
 			return err
 		} else {
 			data, err := ioutil.ReadAll(r)
 			if err != nil {
-				log.Printf("Err: %v", err)
+				fmt.Printf("Err: %v", err)
 				return err
 			} else {
 				checksum2 := ChecksumFromArr(data, strategy)
