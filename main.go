@@ -25,7 +25,7 @@ func main() {
 
 	flag.Parse()
 	if *deflate {
-		err := xzWriter(*fp, *keep)
+		err := XzWriter(*fp, *keep)
 		if err != nil {
 			fmt.Printf("Err: %v", err)
 		}
@@ -66,9 +66,9 @@ func Base64md5(data []byte) string {
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
-// checksumFromPath returns a struct with the checksum of the file at path using the strategy select with strategy string
+// ChecksumFromPath returns a struct with the checksum of the file at path using the strategy selected with strategy string
 // currently implemented sha256 and md5
-func checksumFromPath(file string, strategy string) Checksum {
+func ChecksumFromPath(file string, strategy string) Checksum {
 	var localchecksum Checksum
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -85,7 +85,7 @@ func checksumFromPath(file string, strategy string) Checksum {
 	return localchecksum
 }
 
-// ChecksumFromArr returns a struct with the checksum of the byte array passed the strategy select with strategy string
+// ChecksumFromArr returns a struct with the checksum of the byte array passed the strategy selected with strategy string
 // currently implemented sha256 and md5
 func ChecksumFromArr(data []byte, strategy string) Checksum {
 	var localchecksum Checksum
@@ -103,7 +103,7 @@ func ChecksumFromArr(data []byte, strategy string) Checksum {
 
 // XzReader inflates the file (named file).
 // if stdout is true the inflated file is returned  as io.ReadCloser
-// else it's wirtten to disk.
+// else it's written to disk.
 func XzReader(file string, stdout bool) (io.ReadCloser, error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -143,10 +143,10 @@ func XzReader(file string, stdout bool) (io.ReadCloser, error) {
 	}
 }
 
-// xzWriter deflates the file (named file) to disk
+// XzWriter deflates the file (named file) to disk
 // if keep is  true the original file is kept on disk else
 // is blindly removed
-func xzWriter(file string, keep bool) error {
+func XzWriter(file string, keep bool) error {
 	// Create an *exec.Cmd
 	var cmd *exec.Cmd
 	if keep {
@@ -177,11 +177,11 @@ func xzWriter(file string, keep bool) error {
 // If there is an error, its returned  and the old file is not deleted, BUT
 // there is no guarantee that the deflated file ihas been  created.
 func DeflateCheck(file string, strategy string) error {
-	checksum := checksumFromPath(file, strategy)
+	checksum := ChecksumFromPath(file, strategy)
 	keep := true
-	err := xzWriter(file, keep)
+	err := XzWriter(file, keep)
 	if err != nil {
-		fmt.Printf("Err: %v", err)
+		fmt.Printf("Err: %v \n", err)
 		return err
 	} else {
 		stdout := true
