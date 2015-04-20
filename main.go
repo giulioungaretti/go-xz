@@ -188,12 +188,12 @@ func DeflateCheck(file string, strategy string) error {
 		xzfile := fmt.Sprintf("%v.xz", file)
 		r, err := XzReader(xzfile, stdout)
 		if err != nil {
-			fmt.Printf("Err: %v", err)
+			fmt.Printf("Err: %v \n", err)
 			return err
 		} else {
 			data, err := ioutil.ReadAll(r)
 			if err != nil {
-				fmt.Printf("Err: %v", err)
+				fmt.Printf("Err: %v \n", err)
 				return err
 			} else {
 				checksum2 := ChecksumFromArr(data, strategy)
