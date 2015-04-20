@@ -171,62 +171,26 @@ func XzWriter(file string, keep bool) error {
 	return err
 }
 
-// DeflateCheck deflates a file to file.xz, and deletes file if the checksum of the
-// original file is the same as that of the byte stream coming form inflating back file.xz.
-// Use either stragegy md5 || sha256 to check for the correctness of the deflating process.
+// DeflateCheck deflates a file to file.xz, and deletes file if  all went good.
+// integrity check is done internally by xz. see: http://www.freebsd.org/cgi/man.cgi?query=xz&sektion=1&manpath=FreeBSD+8.3-RELEASE
 // If there is an error, its returned  and the old file is not deleted, BUT
 // there is no guarantee that the deflated file ihas been  created.
 func DeflateCheck(file string, strategy string) error {
-	checksum := ChecksumFromPath(file, strategy)
 	keep := true
 	err := XzWriter(file, keep)
 	if err != nil {
 		fmt.Printf("Err: %v \n", err)
 		return err
 	} else {
-		stdout := true
-		xzfile := fmt.Sprintf("%v.xz", file)
-		r, err := XzReader(xzfile, stdout)
-		if err != nil {
-			fmt.Printf("Err: %v \n", err)
-			return err
+		if err == nil {
+			fmt.Printf("Removing old file \n")
+			os.Remove(file)
+			fmt.Printf("xz removed: %v \n", file)
+			return nil
 		} else {
-			data, err := ioutil.ReadAll(r)
-			if err != nil {
-				fmt.Printf("Err: %v \n", err)
-				return err
-			} else {
-				checksum2 := ChecksumFromArr(data, strategy)
-				var err error
-				switch strategy {
-				default:
-					panic("Not implemented")
-				case "md5":
-					before := checksum.Md5
-					after := checksum2.Md5
-					if before != after {
-						err = errors.New("something went wrong md5 don't match")
-						return err
-					}
-				case "sha256":
-					before := checksum.Sha256
-					after := checksum2.Sha256
-					if before != after {
-						err = errors.New("something went wrong sha256 don't match")
-						return err
-					}
-				}
-			}
-			if err == nil {
-				fmt.Printf("Removing old file \n")
-				os.Remove(file)
-				fmt.Printf("xz removed: %v \n", file)
-				return nil
-			} else {
-				return err
-			}
-
+			return err
 		}
 
 	}
+
 }
