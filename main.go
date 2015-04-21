@@ -185,7 +185,7 @@ func DeflateCheck(file string, strategy string) error {
 		if err == nil {
 			fmt.Printf("Removing old file \n")
 			os.Remove(file)
-			fmt.Printf("xz removed: %v \n", file)
+			fmt.Printf("Removed: %v \n", file)
 			return nil
 		} else {
 			return err
