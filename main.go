@@ -174,7 +174,7 @@ func XzWriter(file string, keep bool) error {
 // DeflateCheck deflates a file to file.xz, and deletes file if  all went good.
 // integrity check is done internally by xz. see: http://www.freebsd.org/cgi/man.cgi?query=xz&sektion=1&manpath=FreeBSD+8.3-RELEASE
 // If there is an error, its returned  and the old file is not deleted, BUT
-// there is no guarantee that the deflated file ihas been  created.
+// there is no guarantee that the deflated file has been  created.
 func DeflateCheck(file string, strategy string) error {
 	keep := true
 	err := XzWriter(file, keep)
