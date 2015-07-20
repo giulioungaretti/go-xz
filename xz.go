@@ -1,4 +1,4 @@
-// xz is a wrapper around a xz executable that must be avaialbe at path
+//Package  xz is a wrapper around a xz executable that must be avaialbe at path
 package xz
 
 import (
@@ -84,25 +84,25 @@ func Reader(file string, stdout bool) (io.ReadCloser, error) {
 			defer f.Close()
 		}()
 		return rpipe, err
-	} else {
-		// Create an *exec.Cmd
-		cmd := exec.Command("xz", "--decompress", file)
-		// Stdout buffer
-		cmdOutput := &bytes.Buffer{}
-		// Attach buffer to command
-		cmd.Stdout = cmdOutput
-		// Stderr buffer
-		cmderror := &bytes.Buffer{}
-		// Attach buffer to command
-		cmd.Stderr = cmderror
-		// Execute command
-		err := cmd.Run() // will wait for command to return
-		if err != nil {
-			errstr := string(cmderror.Bytes())
-			err = errors.New(errstr)
-		}
-		return nil, err
 	}
+	// Create an *exec.Cmd
+	cmd := exec.Command("xz", "--decompress", file)
+	// Stdout buffer
+	cmdOutput := &bytes.Buffer{}
+	// Attach buffer to command
+	cmd.Stdout = cmdOutput
+	// Stderr buffer
+	cmderror := &bytes.Buffer{}
+	// Attach buffer to command
+	cmd.Stderr = cmderror
+	// Execute command
+	err = cmd.Run() // will wait for command to return
+	if err != nil {
+		errstr := string(cmderror.Bytes())
+		err = errors.New(errstr)
+	}
+	return nil, err
+
 }
 
 // Writer deflates the file (named file) to disk
@@ -140,17 +140,12 @@ func Writer(file string, keep bool) error {
 func DeflateCheck(file string, strategy string) error {
 	keep := true
 	err := Writer(file, keep)
-	if err != nil {
-		fmt.Printf("Err: %v \n", err)
-		return err
-	} else {
-		if err == nil {
-			fmt.Printf("Removing old file \n")
-			os.Remove(file)
-			fmt.Printf("Removed: %v \n", file)
-			return nil
-		} else {
-			return err
-		}
+	if err == nil {
+		fmt.Printf("Removing old file \n")
+		os.Remove(file)
+		fmt.Printf("Removed: %v \n", file)
+		return nil
 	}
+	fmt.Printf("Err: %v \n", err)
+	return err
 }
