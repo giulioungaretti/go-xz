@@ -1,3 +1,4 @@
+// xz is a wrapper around a xz executable that must be avaialbe at path
 package xz
 
 import (
@@ -6,51 +7,12 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 )
-
-func main() {
-	fp := flag.String("file", "", "name of file")
-	inflate := flag.Bool("inflate", false, "inflate archive")
-	deflate := flag.Bool("deflate", false, "deflate archive")
-	deflatecheck := flag.Bool("check", false, "deflaten anche check checksums")
-	stdout := flag.Bool("stdout", false, "write to file or to stdout when inflating")
-	keep := flag.Bool("keep", false, "keep original file after deflating")
-	checksum := flag.String("checksum", "md5", "checksum strategy to use. Currently implemented: md5, sha256 ")
-
-	flag.Parse()
-	if *deflate {
-		err := XzWriter(*fp, *keep)
-		if err != nil {
-			fmt.Printf("Err: %v", err)
-		}
-	}
-	if *inflate {
-		if *stdout {
-			r, err := XzReader(*fp, *stdout)
-			n, err := io.Copy(os.Stdout, r)
-			if err != nil {
-				fmt.Printf("copied %d bytes with err: %v", n, err)
-			} else {
-				fmt.Printf("copied %d bytes", n)
-			}
-		} else {
-			_, err := XzReader(*fp, *stdout)
-			if err != nil {
-				fmt.Printf("Err: %v", err)
-			}
-		}
-
-	}
-	if *deflatecheck {
-		_ = DeflateCheck(*fp, *checksum)
-	}
-}
 
 // Checksum contains a Sha256 checksum as a byte array
 // and a md5 check sum as string.
@@ -101,10 +63,10 @@ func ChecksumFromArr(data []byte, strategy string) Checksum {
 
 }
 
-// XzReader inflates the file (named file).
+// Reader inflates the file (named file).
 // if stdout is true the inflated file is returned  as io.ReadCloser
 // else it's written to disk.
-func XzReader(file string, stdout bool) (io.ReadCloser, error) {
+func Reader(file string, stdout bool) (io.ReadCloser, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		panic(err)
@@ -143,10 +105,10 @@ func XzReader(file string, stdout bool) (io.ReadCloser, error) {
 	}
 }
 
-// XzWriter deflates the file (named file) to disk
+// Writer deflates the file (named file) to disk
 // if keep is  true the original file is kept on disk else
 // is blindly removed
-func XzWriter(file string, keep bool) error {
+func Writer(file string, keep bool) error {
 	// Create an *exec.Cmd
 	var cmd *exec.Cmd
 	if keep {
@@ -190,7 +152,5 @@ func DeflateCheck(file string, strategy string) error {
 		} else {
 			return err
 		}
-
 	}
-
 }
