@@ -139,7 +139,7 @@ func Writer(file string, keep bool) error {
 // there is no guarantee that the deflated file has been  created.
 func DeflateCheck(file string, strategy string) error {
 	keep := true
-	err := XzWriter(file, keep)
+	err := Writer(file, keep)
 	if err != nil {
 		fmt.Printf("Err: %v \n", err)
 		return err
