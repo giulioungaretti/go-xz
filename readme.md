@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/giulioungaretti/go-xz.svg)](https://travis-ci.org/giulioungaretti/go-xz)
+[![Build Status](https://travis-ci.org/giulioungaretti/go-xz.svg)](https://travis-ci.org/giulioungaretti/go-xz)  [![GoDoc](https://godoc.org/github.com/giulioungaretti/go-xz?status.svg)](https://godoc.org/github.com/giulioungaretti/go-xz)
 
 GO-XZ
 ====
