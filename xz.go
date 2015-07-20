@@ -1,4 +1,4 @@
-//Package  xz is a wrapper around a xz executable that must be avaialbe at path
+//Package xz is a wrapper around a xz executable that must be avaialbe at path
 package xz
 
 import (
