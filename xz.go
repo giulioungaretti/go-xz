@@ -12,7 +12,18 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+
+	log "github.com/Sirupsen/logrus"
 )
+
+func init() {
+	// chekc if we have the xz executalbe on the platform
+	path, err := exec.LookPath("xz")
+	if err != nil {
+		log.Fatal("installing fortune is in your future")
+	}
+	log.Debug("xz is available at %s\n", path)
+}
 
 // Checksum contains a Sha256 checksum as a byte array
 // and a md5 check sum as string.
@@ -38,7 +49,7 @@ func ChecksumFromPath(file string, strategy string) Checksum {
 	}
 	switch strategy {
 	default:
-		panic("Not implemented")
+		log.Fatalf("stregy %v not implemented", strategy)
 	case "md5":
 		localchecksum.Md5 = Base64md5(data)
 	case "sha256":
@@ -53,7 +64,7 @@ func ChecksumFromArr(data []byte, strategy string) Checksum {
 	var localchecksum Checksum
 	switch strategy {
 	default:
-		panic("Not implemented")
+		log.Fatalf("stregy %v not implemented", strategy)
 	case "md5":
 		localchecksum.Md5 = Base64md5(data)
 	case "sha256":
